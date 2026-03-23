@@ -7,6 +7,7 @@ import SOSButton from './components/SOSButton'
 import CrimeInfo from './components/CrimeInfo'
 import HeatmapToggle from './components/HeatmapToggle'
 import Community from './components/Community'
+import SafetyTimer from './components/SafetyTimer'
 
 export default function App() {
   const [startLocation, setStartLocation] = useState(null)
@@ -19,6 +20,15 @@ export default function App() {
   const [safetyPois, setSafetyPois] = useState(null)
   const [showHeatmap, setShowHeatmap] = useState(false)
   const [crimeHotspots, setCrimeHotspots] = useState([])
+  const [showGuardian, setShowGuardian] = useState(false)
+
+  // Check if guardian timer is actively running
+  const hasActiveGuardian = (() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('saferoute_guardian') || 'null')
+      return saved && saved.phase === 'active'
+    } catch { return false }
+  })()
 
   // Auto-detect day/night based on current time
   const currentHour = new Date().getHours()
@@ -112,6 +122,20 @@ export default function App() {
           </>
         )}
 
+        {/* Guardian Mode Trigger */}
+        <button
+          className={`guardian-trigger ${hasActiveGuardian ? 'has-active' : ''}`}
+          onClick={() => setShowGuardian(true)}
+        >
+          <span className="guardian-trigger-icon">⏱️</span>
+          <span className="guardian-trigger-text">
+            Guardian Mode
+            <span>Dead man's switch — your safety net</span>
+          </span>
+          {hasActiveGuardian && <span className="guardian-active-badge">ACTIVE</span>}
+          <span className="guardian-trigger-arrow">▸</span>
+        </button>
+
         <Community />
 
         <CrimeInfo areaName={startLocation?.primary || ''} />
@@ -151,6 +175,7 @@ export default function App() {
         />
         <HeatmapToggle visible={showHeatmap} onToggle={setShowHeatmap} />
         <SOSButton startLocation={startLocation} endLocation={endLocation} routes={routes} activeRoute={activeRoute} />
+        {showGuardian && <SafetyTimer onClose={() => setShowGuardian(false)} />}
       </main>
     </div>
   )
