@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import API_BASE from './config'
 import LocationInput from './components/LocationInput'
 import MapView from './components/MapView'
 import RoutePanel from './components/RoutePanel'
@@ -37,7 +38,7 @@ export default function App() {
 
   // Fetch crime hotspots for heatmap
   useEffect(() => {
-    fetch('/api/crime-hotspots')
+    fetch(`${API_BASE}/api/crime-hotspots`)
       .then(r => r.json())
       .then(data => setCrimeHotspots(data.hotspots || []))
       .catch(() => {})
@@ -53,7 +54,7 @@ export default function App() {
     setRoutes(null)
 
     try {
-      const resp = await fetch('/api/route', {
+      const resp = await fetch(`${API_BASE}/api/route`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import API_BASE from '../config'
 
 export default function LocationInput({ label, placeholder, icon, onSelect }) {
   const [query, setQuery] = useState('')
@@ -22,7 +23,7 @@ export default function LocationInput({ label, placeholder, icon, onSelect }) {
     setLoading(true)
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/geocode?q=${encodeURIComponent(query)}`)
+        const res = await fetch(`${API_BASE}/api/geocode?q=${encodeURIComponent(query)}`)
         const data = await res.json()
         if (Array.isArray(data)) {
           setSuggestions(data)

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import API_BASE from '../config'
 
 export default function CrimeInfo({ areaName }) {
   const [articles, setArticles] = useState(null)
@@ -39,7 +40,7 @@ export default function CrimeInfo({ areaName }) {
     setError(null)
     setArticles(null)
     setDetectedArea(area)
-    fetch(`/api/crime-news?area=${encodeURIComponent(area)}`)
+    fetch(`${API_BASE}/api/crime-news?area=${encodeURIComponent(area)}`)
       .then(r => r.json())
       .then(data => {
         if (data.articles && data.articles.length > 0) {

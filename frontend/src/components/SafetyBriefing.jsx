@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import API_BASE from '../config'
 
 export default function SafetyBriefing({ route, featuresFound }) {
   const [briefing, setBriefing] = useState(null)
@@ -7,7 +8,7 @@ export default function SafetyBriefing({ route, featuresFound }) {
   useEffect(() => {
     if (!route) { setBriefing(null); return }
     setLoading(true)
-    fetch('/api/safety-briefing', {
+    fetch(`${API_BASE}/api/safety-briefing`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ route, features_found: featuresFound }),
