@@ -6,11 +6,13 @@ Endpoints:
   POST /api/safety-briefing       → AI safety briefing via Gemini
   GET  /api/crime-news?area=...   → Crime news scraper
   GET  /api/crime-hotspots        → Crime hotspot data for heatmap
+  GET  /api/health                → Health check (used by keep-alive)
 """
 
 import os
 import time
 import math
+import threading
 from collections import defaultdict
 from functools import lru_cache
 from dotenv import load_dotenv
@@ -387,6 +389,37 @@ def crime_hotspots():
     """Return crime hotspot data for heatmap rendering."""
     hotspots = get_all_hotspots()
     return jsonify({"hotspots": hotspots})
+
+
+# ─── Health Check + Keep-Alive ──────────────────────────────────────────
+
+@app.route("/api/health")
+def health():
+    """Health check endpoint — also used by the keep-alive pinger."""
+    return jsonify({"status": "ok", "timestamp": time.time()})
+
+
+RENDER_URL = os.getenv("RENDER_EXTERNAL_URL", "")
+KEEP_ALIVE_INTERVAL = 840  # 14 minutes (Render sleeps after 15 min of inactivity)
+
+
+def _keep_alive():
+    """Background thread that pings the health endpoint to prevent Render cold starts."""
+    while True:
+        time.sleep(KEEP_ALIVE_INTERVAL)
+        if RENDER_URL:
+            try:
+                http_req.get(f"{RENDER_URL}/api/health", timeout=10)
+                print("[Keep-Alive] Pinged successfully ✓")
+            except Exception as e:
+                print(f"[Keep-Alive] Ping failed: {e}")
+
+
+# Start keep-alive at module level (gunicorn imports app, doesn't run __main__)
+if RENDER_URL:
+    _ka_thread = threading.Thread(target=_keep_alive, daemon=True)
+    _ka_thread.start()
+    print(f"🏓 Keep-alive pinger started (every {KEEP_ALIVE_INTERVAL}s → {RENDER_URL})")
 
 
 if __name__ == "__main__":
